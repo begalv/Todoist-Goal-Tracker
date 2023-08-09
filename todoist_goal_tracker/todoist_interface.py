@@ -153,8 +153,13 @@ class Todoist_Interface():
         tasks_df['Completed At'] = pd.to_datetime(tasks_df['Completed At'], format='ISO8601').dt.date
         tasks_df['Created At'] = pd.to_datetime(tasks_df['Created At'], format='ISO8601').dt.date
 
-        tasks_df["Complexity"] = tasks_df["Description"]
-        #tasks_df.loc[tasks_df['Is Recurring'] == True, 'Complexity'] = np.nan
+        tasks_df.loc[tasks_df['Description'] == "", 'Description'] = np.nan
+        if tasks_df['Description'].str.isnumeric().all():
+            tasks_df["Complexity"] = tasks_df["Description"]
+            tasks_df.loc[tasks_df['Complexity'] == "", 'Complexity'] = np.nan
+            tasks_df["Complexity"] = tasks_df["Complexity"].astype(float)
+        else:
+            tasks_df["Complexity"] = np.nan
 
         tasks_df["Is Delayed"] = tasks_df["Due"] < datetime.datetime.today().date()
 

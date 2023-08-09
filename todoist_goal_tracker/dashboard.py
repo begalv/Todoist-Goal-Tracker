@@ -222,6 +222,12 @@ class Dashboard():
         """
         st.title(":memo: Effort Tracker Dashboard")
         #KPIS
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric(label="Tasks Qty", value=len(filtered_data))
+        col2.metric(label="Priority Avg", value=int(filtered_data["Priority"].mean()))
+        col3.metric(label="Complexity Avg", value=int(filtered_data["Complexity"][filtered_data["Complexity"].isna() == False].mean()))
+        col4.metric(label="Delayed Tasks Qty", value=len(filtered_data[filtered_data["Is Delayed"]==True]))
         #---------------------
         #Charts
         #---------------------
