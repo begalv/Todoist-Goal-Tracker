@@ -6,6 +6,7 @@ from todoist_interface import Todoist_Interface
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import plotly.express as px
 
 
 try:
@@ -230,6 +231,16 @@ class Dashboard():
         col4.metric(label="Delayed Tasks Qty", value=len(filtered_data[filtered_data["Is Delayed"]==True]))
         #---------------------
         #Charts
+
+        #Tasks Qty by Date
+        col1, col2 = st.columns(2)
+        tasks_count = filtered_data['Due'].value_counts().reset_index()
+        tasks_count.columns = ['Date', 'Qty']
+
+        st.write("### Tasks Qty by Date")
+        fig = px.bar(tasks_count, x='Date', y='Qty')
+        st.plotly_chart(fig)
+
         #---------------------
         #Table
         st.dataframe(filtered_data)
