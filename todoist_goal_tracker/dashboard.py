@@ -226,8 +226,8 @@ class Dashboard():
         col1, col2, col3, col4 = st.columns(4)
 
         col1.metric(label="Tasks Qty", value=len(filtered_data))
-        col2.metric(label="Priority Avg", value=int(filtered_data["Priority"].mean()))
-        col3.metric(label="Complexity Avg", value=int(filtered_data["Complexity"][filtered_data["Complexity"].isna() == False].mean()))
+        col2.metric(label="Priority Median", value=int(filtered_data["Priority"].median()))
+        col3.metric(label="Complexity Median", value=int(filtered_data["Complexity"][filtered_data["Complexity"].isna() == False].median()))
         col4.metric(label="Delayed Tasks Qty", value=len(filtered_data[filtered_data["Is Delayed"]==True]))
         #---------------------
         #Charts
@@ -237,9 +237,36 @@ class Dashboard():
         tasks_count = filtered_data['Due'].value_counts().reset_index()
         tasks_count.columns = ['Date', 'Qty']
 
-        st.write("### Tasks Qty by Date")
-        fig = px.bar(tasks_count, x='Date', y='Qty')
-        st.plotly_chart(fig)
+        #col1.write("### Tasks Qty by Date")
+        tasks_by_date_chart = px.bar(tasks_count, x='Date', y='Qty', title="Tasks Qty by Date")
+        col1.plotly_chart(tasks_by_date_chart)
+
+        #Complexity and Priority scatterplot
+        #col2.write("### Complexity and Priority")
+        complexity_scatterplot = px.scatter(filtered_data, x="Priority", y="Complexity", title="Complexity and Priority")
+        col2.plotly_chart(complexity_scatterplot)
+
+        col1, col2 = st.columns(2)
+
+        #SECTION PIE CHART
+        section_counts = filtered_data['Section'].value_counts()
+        total_section_count = len(filtered_data)
+        section_percentages = (section_counts / total_section_count) * 100
+
+        # Criando um novo DataFrame com as porcentagens
+        section_percentage_df = pd.DataFrame({
+            'Section': section_percentages.index,
+            'Percentage': section_percentages.values
+        })
+
+        section_pie_chart = px.pie(section_percentage_df, values="Percentage", names='Section', title='Section (%)')
+        col1.plotly_chart(section_pie_chart)
+
+        #GOALS PIE CHART
+
+
+
+
 
         #---------------------
         #Table
