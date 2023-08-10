@@ -3,7 +3,7 @@ import pandas as pd
 from todoist_api_python.api import TodoistAPI
 import numpy as np
 import datetime
-
+from datetime import timezone, timedelta
 
 
 class Todoist_Interface():
@@ -150,8 +150,15 @@ class Todoist_Interface():
 
         #Transformando strings em datas
         tasks_df['Due'] = pd.to_datetime(tasks_df['Due'], format='ISO8601').dt.date
-        tasks_df['Completed At'] = pd.to_datetime(tasks_df['Completed At'], format='ISO8601').dt.date
-        tasks_df['Created At'] = pd.to_datetime(tasks_df['Created At'], format='ISO8601').dt.date
+        tasks_df['Completed At'] = pd.to_datetime(tasks_df['Completed At'], format='ISO8601')
+        tasks_df['Created At'] = pd.to_datetime(tasks_df['Created At'], format='ISO8601')
+
+        #consertando fuso horário de UTC para Brasilia
+        fuso_brasilia = timezone(timedelta(hours=-3))
+        tasks_df['Completed At'] = pd.to_datetime(tasks_df['Completed At']).apply(lambda x: x.replace(tzinfo=timezone.utc).astimezone(fuso_brasilia) if pd.notna(x) else x)
+        tasks_df['Created At'] = pd.to_datetime(tasks_df['Created At'].apply(lambda x: x.replace(tzinfo=timezone.utc).astimezone(fuso_brasilia)))
+        tasks_df['Completed At'] = tasks_df['Completed At'].dt.date
+        tasks_df['Created At'] = tasks_df['Created At'].dt.date
 
         tasks_df.loc[tasks_df['Description'] == "", 'Description'] = np.nan
         if tasks_df['Description'].str.isnumeric().all():
@@ -161,7 +168,7 @@ class Todoist_Interface():
         else:
             tasks_df["Complexity"] = np.nan
 
-        tasks_df["Is Delayed"] = tasks_df["Due"] < datetime.datetime.today().date()
+        tasks_df["Is Delayed"] = (tasks_df["Due"] < datetime.datetime.now().date())&(tasks_df["Is Completed"] == False)
 
         status = []
         for task_bool in tasks_df["Is Completed"]:
